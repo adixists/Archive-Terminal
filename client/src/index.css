@@ -1,0 +1,78 @@
+/**
+ * =============================================================================
+ * GLOBAL STYLES — ARCHIVE TERMINAL
+ * =============================================================================
+ * 
+ * Tailwind CSS v4 uses the new @import syntax instead of @tailwind directives.
+ * The @theme block defines all custom design tokens that become available as
+ * Tailwind utility classes (e.g., bg-dark-bg, text-neon-cyan, etc.)
+ * 
+ * Color Palette:
+ * ─────────────
+ * ● Dark backgrounds: Nearly black with blue/purple undertones
+ * ● Neon accents: Cyan (#00f0ff), Purple (#a855f7), Green (#00ff88)
+ * ● Warning/Danger: Amber (#ffaa00), Red (#ff3366)
+ * ● Text hierarchy: Primary (bright), Secondary (dim), Muted (dark)
+ * 
+ * Typography:
+ * ───────────
+ * ● Mono: JetBrains Mono for code, headings, and data
+ * ● Sans: Inter for body text and UI elements
+ * =============================================================================
+ */
+
+/* Tailwind CSS v4 — single import replaces all @tailwind directives */
+@import "tailwindcss";
+
+/* ─── CUSTOM THEME TOKENS ─── */
+@theme {
+  /* Background colors — deep dark surfaces with slight blue/purple tint */
+  --color-dark-bg: #0a0a0f;
+  --color-dark-card: #111119;
+  --color-dark-surface: #1a1a2e;
+  --color-dark-border: #2a2a3e;
+
+  /* Neon accent colors — the signature cyberpunk palette */
+  --color-neon-cyan: #00f0ff;
+  --color-neon-cyan-dim: #00a0aa;
+  --color-neon-purple: #a855f7;
+  --color-neon-purple-deep: #7c3aed;
+  --color-neon-green: #00ff88;
+  --color-neon-amber: #ffaa00;
+  --color-neon-red: #ff3366;
+
+  /* Text colors — layered opacity for visual hierarchy */
+  --color-text-primary: #e0e0f0;
+  --color-text-secondary: #8888aa;
+  --color-text-muted: #555577;
+
+  /* Font stacks — mono for data, sans for UI */
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-family-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ─── BASE STYLES ─── */
+/* Applied globally to set the dark atmosphere and default typography */
+body {
+  background-color: var(--color-dark-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Remove default margin on root element */
+#root {
+  min-height: 100vh;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom selection color to match the neon theme */
+::selection {
+  background-color: rgba(0, 240, 255, 0.2);
+  color: var(--color-neon-cyan);
+}

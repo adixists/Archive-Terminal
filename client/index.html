@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ═══ META ═══ -->
+    <meta name="description" content="Archive Terminal — A futuristic digital resource management system with cyberpunk aesthetics. Catalog, search, and manage your digital resources." />
+    <meta name="theme-color" content="#0a0a0f" />
+
+    <!-- ═══ TITLE ═══ -->
+    <title>Archive Terminal</title>
+
+    <!-- ═══ FAVICON ═══ -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- ═══ GOOGLE FONTS ═══
+         JetBrains Mono: Used for headings, data, code, and monospace elements.
+         Inter: Used for body text, UI labels, and general content.
+         Preconnect hints speed up font loading by establishing early connections. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ═══ FLASH PREVENTION ═══
+         Set the background color immediately to prevent a white flash
+         before CSS loads. This matches --color-dark-bg from the theme. -->
+    <style>
+      body {
+        background-color: #0a0a0f;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- React mounts into this root element -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
