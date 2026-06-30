@@ -1,40 +1,13 @@
 /**
  * =============================================================================
- * RESOURCE MODAL COMPONENT — ARCHIVE TERMINAL
+ * RESOURCE MODAL — ARCHIVE TERMINAL v2.0
  * =============================================================================
- *
- * A full-screen overlay modal for creating and editing resources.
- *
- * Features:
- * ● Dark overlay with backdrop blur for depth
- * ● Centered glass panel with slide-up entrance animation
- * ● Dynamic title: "// NEW RESOURCE" or "// EDIT RESOURCE"
- * ● Form fields with neon-styled inputs:
- *   - Title (text input)
- *   - Category (select: AI Model, Code Snippet, Research Paper, Tool)
- *   - Description (textarea, 4 rows)
- *   - Status (select: Active, Archived, In Review)
- * ● "EXECUTE" submit button with cyan glow
- * ● "ABORT" cancel button with muted styling
- * ● Closes on overlay click (click outside modal)
- * ● Prevents default form submission
- * ● Auto-populates form when editing an existing resource
- *
- * Props:
- * ──────
- * ● isOpen   — Boolean controlling modal visibility
- * ● onClose  — Callback to close the modal
- * ● onSubmit — Callback with form data when user submits
- * ● resource — Null for create mode, populated object for edit mode
- * =============================================================================
+ * Create / Edit form modal with animated gradient border header,
+ * neon-styled form controls, and "Other" category option.
  */
 
 import React, { useState, useEffect } from 'react';
 
-/**
- * Default empty form state for creating a new resource.
- * All fields start blank/default so the user fills them in.
- */
 const EMPTY_FORM = {
   title: '',
   category: 'AI Model',
@@ -42,63 +15,41 @@ const EMPTY_FORM = {
   status: 'Active',
 };
 
-const ResourceModal = ({ isOpen, onClose, onSubmit, resource }) => {
-  // ─── Local Form State ──────────────────────────────────────────────────
-  // Tracks the current values of all form fields. Initialized from the
-  // resource prop (if editing) or from EMPTY_FORM (if creating).
-  const [formData, setFormData] = useState(EMPTY_FORM);
+const CATEGORIES = ['AI Model', 'Code Snippet', 'Research Paper', 'Tool', 'Other'];
+const STATUSES   = ['Active', 'Archived', 'In Review'];
 
-  // ─── Sync Form Data with Resource Prop ─────────────────────────────────
-  // When the modal opens for editing, populate the form with existing data.
-  // When it opens for creating (resource is null), reset to empty state.
+const ResourceModal = ({ isOpen, onClose, onSubmit, resource }) => {
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const isEditing = !!resource;
+
+  /* Populate form when editing */
   useEffect(() => {
     if (resource) {
-      // Edit mode: populate with existing resource data
       setFormData({
-        title: resource.title || '',
-        category: resource.category || 'AI Model',
+        title:       resource.title       || '',
+        category:    resource.category    || 'AI Model',
         description: resource.description || '',
-        status: resource.status || 'Active',
+        status:      resource.status      || 'Active',
       });
     } else {
-      // Create mode: reset to blank form
       setFormData(EMPTY_FORM);
     }
-  }, [resource, isOpen]); // Re-run when resource or modal visibility changes
+  }, [resource, isOpen]);
 
-  /**
-   * Handles changes to any form input/select/textarea.
-   * Uses computed property names to update the correct field
-   * based on the input's `name` attribute.
-   */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  /**
-   * Handles form submission.
-   * Prevents the default browser form action, calls the parent's
-   * onSubmit callback with the current form data, then closes the modal.
-   */
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
     onClose();
   };
 
-  // ─── Early Return if Closed ────────────────────────────────────────────
-  // Don't render anything when the modal is not open
   if (!isOpen) return null;
 
-  // ─── Determine if we're in edit or create mode ─────────────────────────
-  const isEditing = !!resource;
-
   return (
-    /* ─── Overlay Backdrop ──────────────────────────────────────────────────
-     * Covers the entire viewport with a semi-transparent dark layer.
-     * Clicking the overlay (but not the modal content) closes the modal.
-     * Uses .modal-overlay from App.css for fade-in animation. */
     <div
       className="modal-overlay"
       onClick={onClose}
@@ -106,131 +57,127 @@ const ResourceModal = ({ isOpen, onClose, onSubmit, resource }) => {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      {/* ─── Modal Panel ──────────────────────────────────────────────────
-       * Glass card that slides up into view. stopPropagation prevents
-       * clicks inside the modal from triggering the overlay's onClick. */}
+      {/* Modal panel */}
       <div
-        className="glass-strong w-full max-w-lg mx-4 p-6 animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
+        className="glass-strong w-full max-w-lg mx-4 overflow-hidden animate-slide-up"
+        onClick={e => e.stopPropagation()}
       >
-        {/* ─── Modal Header ───────────────────────────────────────────── */}
-        <div className="flex items-center justify-between mb-6">
-          <h2
-            id="modal-title"
-            className="font-mono text-lg font-bold text-neon-cyan tracking-wider"
-          >
-            {isEditing ? '// EDIT RESOURCE' : '// NEW RESOURCE'}
-          </h2>
+        {/* Gradient accent bar at top */}
+        <div
+          className="h-[3px] w-full"
+          style={{ background: 'linear-gradient(90deg, #00f0ff, #a855f7, #ff00cc)' }}
+        />
 
-          {/* Close button (X) — top right corner */}
-          <button
-            onClick={onClose}
-            className="text-text-muted hover:text-neon-cyan transition-colors duration-200 p-1"
-            aria-label="Close modal"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 id="modal-title" className="font-mono text-lg font-bold tracking-wider">
+                <span className="gradient-text">
+                  {isEditing ? '// EDIT_RESOURCE' : '// NEW_RESOURCE'}
+                </span>
+              </h2>
+              <p className="font-mono text-[0.65rem] text-text-muted mt-1">
+                {isEditing
+                  ? 'Modify the fields below and execute to save changes.'
+                  : 'Fill in the fields below to add to the archive.'}
+              </p>
+            </div>
 
-        {/* ─── Form ───────────────────────────────────────────────────── */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Title Input */}
-          <div>
-            <label className="block font-mono text-xs text-text-secondary mb-2 tracking-wider uppercase">
-              Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Enter resource title..."
-              className="input-neon"
-              required
-              autoFocus
-            />
-          </div>
-
-          {/* Category Select */}
-          <div>
-            <label className="block font-mono text-xs text-text-secondary mb-2 tracking-wider uppercase">
-              Category
-            </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="input-neon cursor-pointer"
-            >
-              <option value="AI Model">AI Model</option>
-              <option value="Code Snippet">Code Snippet</option>
-              <option value="Research Paper">Research Paper</option>
-              <option value="Tool">Tool</option>
-            </select>
-          </div>
-
-          {/* Description Textarea */}
-          <div>
-            <label className="block font-mono text-xs text-text-secondary mb-2 tracking-wider uppercase">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Describe this resource..."
-              rows={4}
-              className="input-neon resize-none scrollbar-neon"
-            />
-          </div>
-
-          {/* Status Select */}
-          <div>
-            <label className="block font-mono text-xs text-text-secondary mb-2 tracking-wider uppercase">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="input-neon cursor-pointer"
-            >
-              <option value="Active">Active</option>
-              <option value="Archived">Archived</option>
-              <option value="In Review">In Review</option>
-            </select>
-          </div>
-
-          {/* ─── Action Buttons ─────────────────────────────────────── */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-dark-border">
-            {/* Cancel / Abort button — muted, no glow */}
+            {/* Close button */}
             <button
-              type="button"
               onClick={onClose}
-              className="btn-neon !bg-transparent !border-dark-border !text-text-secondary hover:!text-text-primary hover:!border-text-muted"
+              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200"
+              style={{ color: '#44445a', border: '1px solid rgba(30,30,58,0.8)' }}
+              onMouseEnter={e => { e.currentTarget.style.color='#ff3366'; e.currentTarget.style.borderColor='rgba(255,51,102,0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color='#44445a'; e.currentTarget.style.borderColor='rgba(30,30,58,0.8)'; }}
+              aria-label="Close modal"
             >
-              ABORT
-            </button>
-
-            {/* Submit / Execute button — cyan glow for primary action */}
-            <button
-              type="submit"
-              className="btn-neon btn-cyan"
-            >
-              {/* Terminal prompt icon */}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              EXECUTE
             </button>
           </div>
-        </form>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* Title */}
+            <div>
+              <label className="block font-mono text-[0.68rem] text-text-secondary mb-2 tracking-widest uppercase">
+                <span className="text-neon-cyan mr-1">►</span> Title
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="e.g. GPT-4 Vision, React hooks..."
+                className="input-neon"
+                required
+                autoFocus
+              />
+            </div>
+
+            {/* Category + Status — side by side */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block font-mono text-[0.68rem] text-text-secondary mb-2 tracking-widest uppercase">
+                  <span className="text-neon-purple mr-1">►</span> Category
+                </label>
+                <select name="category" value={formData.category} onChange={handleChange} className="input-neon cursor-pointer">
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block font-mono text-[0.68rem] text-text-secondary mb-2 tracking-widest uppercase">
+                  <span className="text-neon-green mr-1">►</span> Status
+                </label>
+                <select name="status" value={formData.status} onChange={handleChange} className="input-neon cursor-pointer">
+                  {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block font-mono text-[0.68rem] text-text-secondary mb-2 tracking-widest uppercase">
+                <span className="text-neon-amber mr-1">►</span> Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Describe this resource — what it does, why it's useful..."
+                rows={4}
+                className="input-neon resize-none scrollbar-neon"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div
+              className="flex items-center justify-end gap-3 pt-4"
+              style={{ borderTop: '1px solid rgba(30,30,58,0.8)' }}
+            >
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-neon !text-text-secondary !border-dark-border !bg-transparent hover:!text-text-primary"
+                style={{ border: '1px solid rgba(30,30,58,0.8)' }}
+              >
+                ABORT
+              </button>
+
+              <button type="submit" className="btn-neon btn-cyan">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                EXECUTE
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
