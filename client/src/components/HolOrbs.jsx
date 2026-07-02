@@ -160,7 +160,7 @@ function OrbCanvas({ color, glowColor, value, label, labelColor }) {
         </Canvas>
 
         {/* Numeric value overlay */}
-        <div className="orb-value-overlay" style={{ color, textShadow: `0 0 20px ${color}cc, 0 0 40px ${color}66` }}>
+        <div className="orb-value-overlay" style={{ color: '#ffffff', textShadow: `0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5), 0 0 15px ${glowColor}, 0 0 30px ${glowColor}` }}>
           {value}
         </div>
       </div>
