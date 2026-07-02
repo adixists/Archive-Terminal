@@ -5,7 +5,7 @@
  * - Maximize / Full-screen toggle
  * - Code syntax highlighting for "Code Snippet" category
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'; // A good dark sci-fi theme
@@ -22,11 +22,24 @@ const CATEGORY_CONFIG = {
 const STATUS_CLASS = { 'Active':'status-active', 'Archived':'status-archived', 'In Review':'status-review' };
 const formatDate = d => new Date(d).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
 
-const ViewModal = ({ isOpen, onClose, resource }) => {
+const ViewModal = ({ isOpen, onClose, resource, onEdit }) => {
   const [isMaximized, setIsMaximized] = useState(false);
+  const [isEditConfirmOpen, setIsEditConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isEditConfirmOpen) setIsEditConfirmOpen(false);
+        else onClose();
+      }
+    };
+    if (isOpen) window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isEditConfirmOpen, onClose]);
 
   if (!isOpen || !resource) {
     if (isMaximized) setIsMaximized(false); // reset on close
+    if (isEditConfirmOpen) setIsEditConfirmOpen(false);
     return null;
   }
   
@@ -53,7 +66,7 @@ const ViewModal = ({ isOpen, onClose, resource }) => {
           style={{ padding: isMaximized ? '0px' : '16px' }}
         >
           <motion.div
-            className="metal-modal flex flex-col"
+            className="metal-modal flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
             initial={{ opacity: 0, y: 80, rotateX: 20, scale: 0.9 }}
             animate={{ 
@@ -75,9 +88,9 @@ const ViewModal = ({ isOpen, onClose, resource }) => {
               </>
             )}
 
-            <div className={`modal-inner flex flex-col flex-grow ${isMaximized ? '!m-0 !rounded-none !border-0' : ''}`}>
+            <div className={`modal-inner flex flex-col flex-grow min-h-0 ${isMaximized ? '!m-0 !rounded-none !border-0' : ''}`}>
               <div className="modal-accent-bar" style={{ background: `linear-gradient(90deg, ${cat.color}, #a855f7, #00f0ff)` }} />
-              <div className="p-5 sm:p-6 flex flex-col flex-grow overflow-hidden">
+              <div className="p-5 sm:p-6 flex flex-col flex-grow overflow-hidden min-h-0 relative">
                 
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4 flex-shrink-0">
@@ -118,7 +131,12 @@ const ViewModal = ({ isOpen, onClose, resource }) => {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-grow overflow-y-auto min-h-0 scrollbar-neon rounded-md mb-6 relative" style={{ background: 'rgba(4,4,8,0.7)', border: '1px solid rgba(26,26,54,0.8)' }}>
+                <div 
+                  className="flex-grow overflow-y-auto min-h-0 scrollbar-neon rounded-md mb-6 relative cursor-pointer" 
+                  style={{ background: 'rgba(4,4,8,0.7)', border: '1px solid rgba(26,26,54,0.8)' }}
+                  onClick={() => setIsEditConfirmOpen(true)}
+                  title="Click to edit resource"
+                >
                   {isCode ? (
                     <SyntaxHighlighter 
                       language="javascript"
@@ -141,6 +159,28 @@ const ViewModal = ({ isOpen, onClose, resource }) => {
                 <div className="flex justify-end flex-shrink-0 pt-2" style={{ borderTop: '1px solid rgba(26,26,54,0.6)' }}>
                   <button onClick={onClose} className="btn-neon btn-cyan btn-glitch">CLOSE_TERMINAL</button>
                 </div>
+
+                {/* Edit Confirmation Overlay */}
+                <AnimatePresence>
+                  {isEditConfirmOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="absolute inset-0 z-50 flex items-center justify-center p-6"
+                      style={{ background: 'rgba(5,5,14,0.85)', backdropFilter: 'blur(8px)' }}
+                    >
+                      <div className="p-6 rounded-lg text-center" style={{ background: 'rgba(10,10,20,0.95)', border: `1px solid ${cat.color}60`, boxShadow: `0 0 30px ${cat.color}20` }}>
+                        <h3 className="font-mono text-lg text-white mb-3 tracking-wider">EDIT RESOURCE?</h3>
+                        <p className="font-mono text-xs text-text-muted mb-6">Modify the contents of this archive entry.</p>
+                        <div className="flex items-center justify-center gap-4">
+                          <button onClick={() => setIsEditConfirmOpen(false)} className="btn-neon btn-red btn-glitch">CANCEL</button>
+                          <button onClick={() => { setIsEditConfirmOpen(false); onClose(); onEdit(resource); }} className="btn-neon btn-cyan btn-glitch">
+                            PROCEED TO EDIT
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.div>

@@ -282,6 +282,7 @@ const Dashboard = ({ onAddResource }) => {
         isOpen={isViewOpen}
         onClose={() => { setIsViewOpen(false); setResourceToView(null); }}
         resource={resourceToView}
+        onEdit={handleEdit}
       />
 
       {/* ── Toast notifications ──────────────────────────────────────────── */}
