@@ -240,63 +240,149 @@
 }
 
 /* ── ORB HUD CONTAINER ────────────────────────────────────────────────────── */
-.orb-hud {
+/* ── SPACE HUD ────────────────────────────────────────────────────────────── */
+.space-hud {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 200, 255, 0.12);
+  box-shadow:
+    0 0 60px rgba(0,240,255,0.06),
+    0 0 120px rgba(100,0,200,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  height: 200px;
+}
+
+/* The Three.js canvas fills the full background */
+.space-hud-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.space-hud-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── Porthole stat windows ─────────────────────────────────────────────── */
+.space-hud-stats {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  padding: 0 40px 0 0;
+  pointer-events: none;
+}
+
+.stat-porthole {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 2px solid;
+  background: rgba(4, 6, 20, 0.85);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 20px 32px;
-  background: linear-gradient(135deg, rgba(10,10,20,0.7) 0%, rgba(6,6,14,0.8) 100%);
-  border: 1px solid rgba(0,240,255,0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(20px);
-  box-shadow:
-    0 0 60px rgba(0,240,255,0.05),
-    inset 0 1px 0 rgba(255,255,255,0.03);
-  position: relative;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.orb-hud::before {
-  content: '';
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(0,240,255,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 50%, rgba(255,0,204,0.04) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.orb-section {
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 0 28px;
-  cursor: default;
-}
-
-.orb-section:not(:last-child) {
-  border-right: 1px solid rgba(0,240,255,0.06);
-}
-
-.orb-canvas-wrapper {
-  width: 110px; height: 110px;
-  position: relative;
-  display: flex; align-items: center; justify-content: center;
-}
-
-.orb-value-overlay {
+.porthole-rim {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 2rem; font-weight: 900;
-  z-index: 10;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1px solid;
   pointer-events: none;
 }
 
-.orb-label {
+/* Animated scanlines across each porthole */
+.porthole-scanlines {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.15) 3px,
+    rgba(0,0,0,0.15) 4px
+  );
+  pointer-events: none;
+}
+
+.porthole-content {
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+/* Corner bolts */
+.bolt {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+.bolt-tl { top: -32px; left: -28px; }
+.bolt-tr { top: -32px; right: -28px; }
+.bolt-bl { bottom: -32px; left: -28px; }
+.bolt-br { bottom: -32px; right: -28px; }
+
+.porthole-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem; font-weight: 700;
-  letter-spacing: 0.2em; text-transform: uppercase;
-  margin-top: 4px;
+  font-size: 2.4rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.porthole-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  border-top: 1px solid;
+  padding-top: 5px;
+  margin-top: 2px;
+  opacity: 0.7;
+}
+
+/* ── HUD Corner decorators ────────────────────────────────────────────────── */
+.hud-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: rgba(0, 200, 255, 0.3);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 10;
+}
+.hud-tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+.hud-tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+.hud-bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+.hud-br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+/* ── Animated scan line sweeping across hud ──────────────────────────────── */
+.hud-scan-bar {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.15), transparent);
+  animation: hudScan 4s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes hudScan {
+  0%   { top: 0%; }
+  100% { top: 100%; }
 }
 
 /* ── SEARCH BAR ───────────────────────────────────────────────────────────── */

@@ -1,184 +1,346 @@
 /**
  * =============================================================================
- * HOLORBS — Three.js Holographic Particle Orbs
+ * SPACE HUD — Archive Terminal v4.0
  * =============================================================================
- * Renders three rotating, particle-emitting holographic spheres:
- * - Cyan (TOTAL), Green (ACTIVE), Magenta (ARCHIVED)
- * - Each orb has orbiting particle specks
- * - Slow vertical bobbing sine wave
- * - Hover: spin faster + scale up 5%
+ * Renders:
+ * - Full-width deep-space background with starfield (Three.js)
+ * - A 3D rocket that flies in from the left, settles in the center with live
+ *   animated exhaust/fire plume
+ * - Three holographic "porthole windows" showing TOTAL / ACTIVE / ARCHIVED stats
  */
 
-import React, { useRef, useMemo, useState, useCallback } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-/* ── Single Holographic Orb ───────────────────────────────────────────────── */
-function HoloOrb({ color, glowColor, isHovered }) {
-  const groupRef    = useRef();
-  const sphereRef   = useRef();
-  const particlesRef= useRef();
-  const timeRef     = useRef(Math.random() * Math.PI * 2);
-
-  // Particle positions orbiting the sphere
-  const { positions, phases } = useMemo(() => {
-    const count = 120;
-    const pos   = new Float32Array(count * 3);
-    const ph    = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      // Random points on sphere surface + slightly beyond
-      const phi   = Math.acos(2 * Math.random() - 1);
-      const theta = Math.random() * Math.PI * 2;
-      const r     = 0.58 + Math.random() * 0.25;
-      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i*3+2] = r * Math.cos(phi);
-      ph[i]      = Math.random() * Math.PI * 2;
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  STARFIELD                                                                   */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+function StarField() {
+  const ref = useRef();
+  const positions = useMemo(() => {
+    const arr = new Float32Array(3000 * 3);
+    for (let i = 0; i < 3000; i++) {
+      arr[i * 3]     = (Math.random() - 0.5) * 80;
+      arr[i * 3 + 1] = (Math.random() - 0.5) * 40;
+      arr[i * 3 + 2] = (Math.random() - 0.5) * 60;
     }
-    return { positions: pos, phases: ph };
+    return arr;
   }, []);
 
-  const spinSpeed = isHovered ? 0.9 : 0.22;
-  const scaleTarget = isHovered ? 1.05 : 1.0;
+  useFrame((_, delta) => {
+    if (ref.current) ref.current.rotation.y += delta * 0.008;
+  });
 
-  useFrame((state, delta) => {
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial color="#b0c8ff" size={0.06} transparent opacity={0.7} sizeAttenuation />
+    </points>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  EXHAUST PARTICLES                                                           */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+function ExhaustParticles({ active }) {
+  const ref = useRef();
+  const COUNT = 120;
+
+  const { positions, velocities, lifetimes, sizes } = useMemo(() => {
+    const pos = new Float32Array(COUNT * 3);
+    const vel = new Float32Array(COUNT * 3);
+    const lt  = new Float32Array(COUNT);
+    const sz  = new Float32Array(COUNT);
+    for (let i = 0; i < COUNT; i++) {
+      lt[i] = Math.random(); // stagger initial lifetimes
+      sz[i] = 0.04 + Math.random() * 0.08;
+    }
+    return { positions: pos, velocities: vel, lifetimes: lt, sizes: sz };
+  }, []);
+
+  const colorsArr = useMemo(() => new Float32Array(COUNT * 3), []);
+
+  useFrame((_, delta) => {
+    if (!ref.current || !active) return;
+    const posAttr = ref.current.geometry.attributes.position;
+    const colAttr = ref.current.geometry.attributes.color;
+    const szAttr  = ref.current.geometry.attributes.size;
+
+    for (let i = 0; i < COUNT; i++) {
+      lifetimes[i] -= delta * 1.8;
+      if (lifetimes[i] <= 0) {
+        // Reset particle at rocket nozzle (behind rocket, in local coords)
+        lifetimes[i] = 0.6 + Math.random() * 0.4;
+        posAttr.array[i * 3]     = -1.15 + (Math.random() - 0.5) * 0.05;
+        posAttr.array[i * 3 + 1] = (Math.random() - 0.5) * 0.08;
+        posAttr.array[i * 3 + 2] = (Math.random() - 0.5) * 0.08;
+        velocities[i * 3]     = -(0.6 + Math.random() * 1.4); // shoots left
+        velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.2;
+        velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+      }
+      posAttr.array[i * 3]     += velocities[i * 3] * delta;
+      posAttr.array[i * 3 + 1] += velocities[i * 3 + 1] * delta;
+      posAttr.array[i * 3 + 2] += velocities[i * 3 + 2] * delta;
+
+      // Color gradient: white core → orange → red → transparent
+      const t = 1 - lifetimes[i] / 1.0;
+      if (t < 0.2) {
+        colAttr.array[i * 3]     = 1.0;
+        colAttr.array[i * 3 + 1] = 1.0;
+        colAttr.array[i * 3 + 2] = 0.9;
+      } else if (t < 0.5) {
+        colAttr.array[i * 3]     = 1.0;
+        colAttr.array[i * 3 + 1] = 0.5 - (t - 0.2) * 0.8;
+        colAttr.array[i * 3 + 2] = 0.1;
+      } else {
+        colAttr.array[i * 3]     = 0.9 - (t - 0.5) * 1.5;
+        colAttr.array[i * 3 + 1] = 0.1;
+        colAttr.array[i * 3 + 2] = 0.0;
+      }
+
+      const alpha = Math.max(0, lifetimes[i] / 0.6);
+      szAttr.array[i] = sizes[i] * (0.5 + 0.5 * alpha);
+    }
+    posAttr.needsUpdate = true;
+    colAttr.needsUpdate = true;
+    szAttr.needsUpdate  = true;
+  });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-color"    args={[colorsArr, 3]} />
+        <bufferAttribute attach="attributes-size"     args={[sizes, 1]} />
+      </bufferGeometry>
+      <pointsMaterial
+        vertexColors
+        transparent
+        opacity={0.95}
+        sizeAttenuation
+        size={0.08}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  ROCKET BODY                                                                 */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+function RocketMesh({ settled }) {
+  const groupRef = useRef();
+  const flameRef = useRef();
+  const timeRef  = useRef(0);
+
+  // Fly-in animation: start off-screen left, settle to center
+  const startX = -22;
+  const endX   = 0;
+  const xRef   = useRef(startX);
+  const doneRef = useRef(false);
+
+  useFrame((_, delta) => {
     timeRef.current += delta;
     const t = timeRef.current;
 
     if (groupRef.current) {
-      // Vertical bob
-      groupRef.current.position.y = Math.sin(t * 0.7 + timeRef.current * 0) * 0.08;
-      // Smooth scale
-      const cs = groupRef.current.scale.x;
-      const ns = cs + (scaleTarget - cs) * 0.08;
-      groupRef.current.scale.set(ns, ns, ns);
-    }
-
-    if (sphereRef.current) {
-      sphereRef.current.rotation.y += delta * spinSpeed;
-      sphereRef.current.rotation.x += delta * spinSpeed * 0.4;
-    }
-
-    if (particlesRef.current) {
-      particlesRef.current.rotation.y -= delta * spinSpeed * 0.6;
-      particlesRef.current.rotation.z += delta * spinSpeed * 0.3;
-
-      // Twinkle particles
-      const posAttr = particlesRef.current.geometry.attributes.position;
-      for (let i = 0; i < positions.length / 3; i++) {
-        const phase = phases[i];
-        const base = 0.58 + Math.sin(t * 2 + phase) * 0.04;
-        const phi   = Math.acos(positions[i*3+2] / 0.6);
-        const theta = Math.atan2(positions[i*3+1], positions[i*3]);
-        posAttr.array[i*3]   = base * Math.sin(phi) * Math.cos(theta + t * 0.1);
-        posAttr.array[i*3+1] = base * Math.sin(phi) * Math.sin(theta + t * 0.1);
-        posAttr.array[i*3+2] = base * Math.cos(phi);
+      if (!doneRef.current) {
+        // Ease-in-out to center
+        xRef.current += (endX - xRef.current) * delta * 1.6;
+        if (Math.abs(xRef.current - endX) < 0.01) {
+          xRef.current = endX;
+          doneRef.current = true;
+        }
+        groupRef.current.position.x = xRef.current;
       }
-      posAttr.needsUpdate = true;
+
+      // Gentle float when settled
+      groupRef.current.position.y = Math.sin(t * 0.8) * 0.05;
+      groupRef.current.rotation.z = Math.sin(t * 0.5) * 0.03;
+    }
+
+    // Pulsate flame cone
+    if (flameRef.current) {
+      const pulse = 1 + Math.sin(t * 14) * 0.12;
+      flameRef.current.scale.set(pulse, 1 + Math.sin(t * 18) * 0.15, pulse);
     }
   });
 
-  const c = new THREE.Color(color);
-  const g = new THREE.Color(glowColor);
-
   return (
-    <group ref={groupRef}>
-      {/* Core glowing sphere */}
-      <mesh ref={sphereRef}>
-        <sphereGeometry args={[0.42, 32, 32]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={glowColor}
-          emissiveIntensity={isHovered ? 1.2 : 0.7}
-          roughness={0.1}
-          metalness={0.4}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-
-      {/* Outer wireframe ring */}
+    <group ref={groupRef} position={[startX, 0, 0]}>
+      {/* === Fuselage === */}
       <mesh>
-        <sphereGeometry args={[0.5, 12, 12]} />
-        <meshBasicMaterial color={color} wireframe transparent opacity={0.06} />
+        <cylinderGeometry args={[0.18, 0.22, 1.8, 32]} />
+        <meshStandardMaterial color="#1a1a2e" metalness={0.8} roughness={0.2} />
       </mesh>
 
-      {/* Orbital ring 1 */}
-      <mesh rotation={[Math.PI/2, 0, 0]}>
-        <torusGeometry args={[0.54, 0.006, 8, 60]} />
-        <meshBasicMaterial color={color} transparent opacity={0.3} />
+      {/* Fuselage metallic stripe */}
+      <mesh>
+        <cylinderGeometry args={[0.185, 0.225, 0.06, 32]} />
+        <meshStandardMaterial color="#00f0ff" emissive="#00f0ff" emissiveIntensity={0.4} metalness={1} roughness={0.1} />
       </mesh>
 
-      {/* Orbital ring 2 — tilted */}
-      <mesh rotation={[Math.PI/4, Math.PI/6, 0]}>
-        <torusGeometry args={[0.56, 0.004, 8, 60]} />
-        <meshBasicMaterial color={glowColor} transparent opacity={0.2} />
+      {/* === Nose cone === */}
+      <mesh position={[0, 1.15, 0]}>
+        <coneGeometry args={[0.18, 0.75, 32]} />
+        <meshStandardMaterial color="#0f0f1e" metalness={0.9} roughness={0.1} />
       </mesh>
 
-      {/* Particle specks */}
-      <points ref={particlesRef}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          color={color}
-          size={0.018}
-          transparent
-          opacity={isHovered ? 0.85 : 0.55}
-          sizeAttenuation
-        />
-      </points>
+      {/* Nose tip glow */}
+      <mesh position={[0, 1.52, 0]}>
+        <sphereGeometry args={[0.04, 12, 12]} />
+        <meshStandardMaterial color="#00f0ff" emissive="#00f0ff" emissiveIntensity={2} />
+      </mesh>
 
-      {/* Point light for glow effect */}
-      <pointLight color={glowColor} intensity={isHovered ? 1.5 : 0.8} distance={2.5} decay={2} />
+      {/* === Fins (4) === */}
+      {[0, 90, 180, 270].map((deg, i) => (
+        <mesh key={i} position={[
+          Math.sin(deg * Math.PI / 180) * 0.23,
+          -0.72,
+          Math.cos(deg * Math.PI / 180) * 0.23,
+        ]} rotation={[0, deg * Math.PI / 180, 0]}>
+          <coneGeometry args={[0.13, 0.5, 3]} />
+          <meshStandardMaterial color="#12122a" metalness={0.7} roughness={0.3} />
+        </mesh>
+      ))}
+
+      {/* === Engine nozzle === */}
+      <mesh position={[0, -1.05, 0]}>
+        <cylinderGeometry args={[0.16, 0.22, 0.25, 24]} />
+        <meshStandardMaterial color="#0a0a18" metalness={1} roughness={0.05} />
+      </mesh>
+
+      {/* === Flame cone (visible glow) === */}
+      <mesh ref={flameRef} position={[0, -1.35, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.14, 0.55, 24, 1, true]} />
+        <meshBasicMaterial color="#ff6600" transparent opacity={0.6} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+
+      {/* Inner flame */}
+      <mesh position={[0, -1.28, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.07, 0.35, 16, 1, true]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.8} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+
+      {/* Window porthole on rocket body */}
+      <mesh position={[0, 0.3, 0.2]}>
+        <circleGeometry args={[0.08, 24]} />
+        <meshStandardMaterial color="#00f0ff" emissive="#00f0ff" emissiveIntensity={0.8} transparent opacity={0.9} />
+      </mesh>
+
+      {/* Glow light from engine */}
+      <pointLight position={[0, -1.5, 0]} color="#ff4400" intensity={2.5} distance={2.5} decay={2} />
+      {/* Blue rim glow */}
+      <pointLight position={[0, 0.5, 0]} color="#00f0ff" intensity={0.5} distance={3} decay={2} />
+
+      {/* Exhaust particles */}
+      <ExhaustParticles active={true} />
     </group>
   );
 }
 
-/* ── Single Orb Canvas ────────────────────────────────────────────────────── */
-function OrbCanvas({ color, glowColor, value, label, labelColor }) {
-  const [hovered, setHovered] = useState(false);
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  SCENE CAMERA & FOG                                                          */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+function SceneSetup() {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.fog = new THREE.FogExp2('#04040e', 0.018);
+    return () => { scene.fog = null; };
+  }, [scene]);
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  PORTHOLE / STAT WINDOW OVERLAY                                              */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+function StatWindow({ value, label, color, glowColor, delay }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
 
   return (
-    <div className="orb-section">
-      <div
-        className="orb-canvas-wrapper"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{ cursor: 'default' }}
-      >
-        <Canvas
-          style={{ width: '110px', height: '110px', background: 'transparent' }}
-          gl={{ alpha: true, antialias: true }}
-          camera={{ position: [0, 0, 2], fov: 45 }}
-          dpr={Math.min(window.devicePixelRatio, 1.5)}
-        >
-          <ambientLight intensity={0.3} />
-          <pointLight position={[2, 2, 2]} intensity={0.8} color={glowColor} />
-          <pointLight position={[-2, -1, 1]} intensity={0.4} color={color} />
-          <HoloOrb color={color} glowColor={glowColor} isHovered={hovered} />
-        </Canvas>
+    <div
+      className="stat-porthole"
+      style={{
+        borderColor: color,
+        boxShadow: `0 0 24px ${glowColor}44, inset 0 0 20px ${glowColor}11, 0 0 2px ${color}`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
+        transition: `opacity 0.7s ease, transform 0.7s ease`,
+      }}
+    >
+      {/* Porthole glass rim */}
+      <div className="porthole-rim" style={{ borderColor: `${color}66` }} />
 
-        {/* Numeric value overlay */}
-        <div className="orb-value-overlay" style={{ color: '#ffffff', textShadow: `0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5), 0 0 15px ${glowColor}, 0 0 30px ${glowColor}` }}>
-          {value}
+      {/* Scan-line decoration */}
+      <div className="porthole-scanlines" />
+
+      {/* Inner content */}
+      <div className="porthole-content">
+        {/* Corner bolts */}
+        <div className="bolt bolt-tl" style={{ background: color }} />
+        <div className="bolt bolt-tr" style={{ background: color }} />
+        <div className="bolt bolt-bl" style={{ background: color }} />
+        <div className="bolt bolt-br" style={{ background: color }} />
+
+        {/* Value */}
+        <div className="porthole-value" style={{ color, textShadow: `0 0 20px ${glowColor}, 0 0 40px ${glowColor}88` }}>
+          {String(value).padStart(2, '0')}
+        </div>
+
+        {/* Label */}
+        <div className="porthole-label" style={{ color: `${color}aa`, borderTopColor: `${color}44` }}>
+          {label}
         </div>
       </div>
-
-      <span className="orb-label" style={{ color: labelColor }}>
-        {label}
-      </span>
     </div>
   );
 }
 
-/* ── Orb HUD — Three Orbs in a Glass Container ────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  MAIN COMPONENT                                                              */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 const HolOrbs = ({ total, active, archived }) => {
   return (
-    <div className="orb-hud">
-      <OrbCanvas color="#00aacc" glowColor="#00f0ff" value={total}    label="TOTAL"    labelColor="#00f0ff" />
-      <OrbCanvas color="#00aa66" glowColor="#00ff88" value={active}   label="ACTIVE"   labelColor="#00ff88" />
-      <OrbCanvas color="#cc0099" glowColor="#ff00cc" value={archived} label="ARCHIVED" labelColor="#ff00cc" />
+    <div className="space-hud">
+      {/* ── 3D Canvas (background scene) ── */}
+      <div className="space-hud-canvas">
+        <Canvas
+          camera={{ position: [0, 0, 6], fov: 50 }}
+          gl={{ alpha: false, antialias: true }}
+          dpr={Math.min(window.devicePixelRatio, 1.5)}
+          style={{ background: '#04040e' }}
+        >
+          <SceneSetup />
+          <ambientLight intensity={0.15} color="#1a1a3e" />
+          <pointLight position={[5, 5, 5]} intensity={0.4} color="#4040ff" />
+          <pointLight position={[-5, 3, 3]} intensity={0.3} color="#00f0ff" />
+          <StarField />
+          <RocketMesh />
+        </Canvas>
+      </div>
+
+      {/* ── Porthole Stat Windows overlay ── */}
+      <div className="space-hud-stats">
+        <StatWindow value={total}    label="TOTAL"    color="#00c8ff" glowColor="#00f0ff" delay={800}  />
+        <StatWindow value={active}   label="ACTIVE"   color="#00e87a" glowColor="#00ff88" delay={1100} />
+        <StatWindow value={archived} label="ARCHIVED" color="#cc44ff" glowColor="#aa00ff" delay={1400} />
+      </div>
+
+      {/* ── Decorative HUD lines ── */}
+      <div className="hud-corner hud-tl" />
+      <div className="hud-corner hud-tr" />
+      <div className="hud-corner hud-bl" />
+      <div className="hud-corner hud-br" />
+      <div className="hud-scan-bar" />
     </div>
   );
 };
