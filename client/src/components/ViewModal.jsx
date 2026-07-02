@@ -9,6 +9,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'; // A good dark sci-fi theme
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const CATEGORY_CONFIG = {
   'AI Model':       { bg:'rgba(0,240,255,0.07)', color:'#00f0ff', border:'rgba(0,240,255,0.2)', dot:'#00f0ff' },
@@ -116,19 +118,21 @@ const ViewModal = ({ isOpen, onClose, resource }) => {
                 </div>
 
                 {/* Content Area */}
-                <div className={`flex-grow overflow-y-auto scrollbar-neon rounded-md mb-6 relative`} style={{ background: 'rgba(4,4,8,0.7)', border: '1px solid rgba(26,26,54,0.8)' }}>
+                <div className="flex-grow overflow-y-auto min-h-0 scrollbar-neon rounded-md mb-6 relative" style={{ background: 'rgba(4,4,8,0.7)', border: '1px solid rgba(26,26,54,0.8)' }}>
                   {isCode ? (
                     <SyntaxHighlighter 
-                      language="javascript" // Defaulting to js for generic snippets, can be auto-detected in a real prod app
+                      language="javascript"
                       style={vscDarkPlus}
-                      customStyle={{ margin: 0, padding: '16px', background: 'transparent', minHeight: '100%', fontSize: '0.85rem' }}
+                      customStyle={{ margin: 0, padding: '16px', background: 'transparent', fontSize: '0.85rem' }}
                       wrapLongLines={true}
                     >
                       {resource.description || '// No code provided.'}
                     </SyntaxHighlighter>
                   ) : (
-                    <div className="p-4 whitespace-pre-wrap text-sm text-text-primary leading-relaxed font-sans">
-                      {resource.description || 'No description provided.'}
+                    <div className="p-4 text-sm text-text-primary leading-relaxed font-sans markdown-body">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {resource.description || 'No description provided.'}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </div>
