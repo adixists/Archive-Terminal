@@ -22,6 +22,7 @@ import ResourceCard from './ResourceCard';
 import ResourceModal from './ResourceModal';
 import ConfirmModal  from './ConfirmModal';
 import HolOrbs       from './HolOrbs';
+import ViewModal     from './ViewModal';
 import { ToastContainer, useToast } from './Toast';
 
 /* ── Category chip config ─────────────────────────────────────────────────── */
@@ -44,8 +45,10 @@ const Dashboard = ({ onAddResource }) => {
   const [activeCategory,   setActiveCategory]   = useState('All');
   const [isModalOpen,      setIsModalOpen]      = useState(false);
   const [isConfirmOpen,    setIsConfirmOpen]    = useState(false);
+  const [isViewOpen,       setIsViewOpen]       = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
   const [resourceToDelete, setResourceToDelete] = useState(null);
+  const [resourceToView,   setResourceToView]   = useState(null);
   const dashTitleRef = useRef(null);
 
   const { toasts, addToast, removeToast } = useToast();
@@ -102,6 +105,7 @@ const Dashboard = ({ onAddResource }) => {
   const openCreate   = () => { setSelectedResource(null);  setIsModalOpen(true); };
   const handleEdit   = r  => { setSelectedResource(r);     setIsModalOpen(true); };
   const openConfirm  = r  => { setResourceToDelete(r);     setIsConfirmOpen(true); };
+  const openView     = r  => { setResourceToView(r);       setIsViewOpen(true); };
 
   /* ── Filter ─────────────────────────────────────────────────────────────── */
   const filtered = resources.filter(r =>
@@ -214,7 +218,7 @@ const Dashboard = ({ onAddResource }) => {
                 transition={{ duration:0.35, delay:index*0.06, ease:[0.4,0,0.2,1] }}
                 layout
               >
-                <ResourceCard resource={resource} onEdit={handleEdit} onDelete={openConfirm} />
+                <ResourceCard resource={resource} onEdit={handleEdit} onDelete={openConfirm} onView={openView} />
               </motion.div>
             ))}
           </AnimatePresence>
@@ -273,6 +277,11 @@ const Dashboard = ({ onAddResource }) => {
         onClose={() => { setIsConfirmOpen(false); setResourceToDelete(null); }}
         onConfirm={handleDelete}
         resourceTitle={resourceToDelete?.title || ''}
+      />
+      <ViewModal
+        isOpen={isViewOpen}
+        onClose={() => { setIsViewOpen(false); setResourceToView(null); }}
+        resource={resourceToView}
       />
 
       {/* ── Toast notifications ──────────────────────────────────────────── */}
