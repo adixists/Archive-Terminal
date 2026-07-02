@@ -11,7 +11,7 @@
 [![Express](https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-10+-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
 
-*Next-generation digital archive featuring a live 3D server room, holographic particle orbs, and cinematic UI animations.*
+*Next-generation digital archive featuring a live 3D server room, CSS CRT stat monitors, and cinematic UI animations.*
 
 </div>
 
@@ -46,7 +46,7 @@ The interface strictly adheres to a **futuristic sci-fi terminal** aesthetic, bl
 | Design Element | Implementation |
 | :--- | :--- |
 | **WebGL Background** | Live 3D server room with flickering LED racks, atmospheric fog, and floating holographic code panels. |
-| **HoloOrbs HUD** | Three spinning WebGL particle orbs (Cyan, Green, Magenta) displaying live database statistics. |
+| **Server Room HUD** | Pure CSS server room dashboard with animated data streams and glowing CRT monitors displaying live database statistics. |
 | **Metal UI Frames** | Modals and headers housed in heavy brushed metal enclosures with 3D bevels and corner screws. |
 | **Console Desk** | Photorealistic carbon fiber console desk anchoring the foreground. |
 | **Cinematic Motion** | Framer Motion spring-physics for modals, GSAP terminal typing effects, and glitch-hover buttons. |
@@ -60,7 +60,7 @@ The interface strictly adheres to a **futuristic sci-fi terminal** aesthetic, bl
 | Technology | Role |
 | :--- | :--- |
 | **React 18 & Vite** | UI framework and blazing-fast build tool |
-| **Three.js & R3F** | WebGL rendering for the 3D server room and holographic orbs |
+| **Three.js & R3F** | WebGL rendering for the 3D server room background |
 | **Framer Motion & GSAP** | High-performance physics-based UI and typography animations |
 | **Tailwind CSS v4** | Utility-first styling with custom CSS tokens |
 | **Axios** | HTTP client for API communication |
@@ -85,7 +85,7 @@ The interface strictly adheres to a **futuristic sci-fi terminal** aesthetic, bl
 
 ### UI/UX Highlights
 - 🔍 **Real-time Search** — Client-side title filtering with instant visual feedback.
-- 📊 **3D Stats Orbs** — Live counts of Total, Active, and Archived resources rendered as WebGL spheres.
+- 📊 **Server Room Stats** — Live counts of Total, Active, and Archived resources rendered as glowing CRT monitors in a pure CSS server rack.
 - 📭 **Empty States** — Context-aware messaging for empty archive vs. no search results.
 - 🖱️ **Glitch Interactions** — Buttons feature chromatic aberration jitter effects on hover.
 
@@ -124,7 +124,7 @@ CRUD/
 │   ├── 📁 src/
 │   │   ├── 📁 components/
 │   │   │   ├── Scene3D.jsx           # Three.js server room background
-│   │   │   ├── HolOrbs.jsx           # Three.js particle stat orbs
+│   │   │   ├── HolOrbs.jsx           # Pure CSS Server Room HUD with CRT monitors
 │   │   │   ├── Dashboard.jsx         # Main orchestrator & animations
 │   │   │   ├── ResourceModal.jsx     # Metal-framed Create/Edit form
 │   │   │   ├── ViewModal.jsx         # Full-detail reading modal
