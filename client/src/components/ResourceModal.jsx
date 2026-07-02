@@ -270,8 +270,9 @@ const ResourceModal = ({ isOpen, onClose, onSubmit, resource }) => {
                     </svg>
                   </button>
                 </div>
+              </div>
 
-                {/* Form */}
+              {/* Form */}
                 <form onSubmit={handleSubmit} className="flex flex-col flex-grow space-y-4 overflow-y-auto overflow-x-hidden pr-2 scrollbar-neon">
                   {/* Title */}
                   <div>
