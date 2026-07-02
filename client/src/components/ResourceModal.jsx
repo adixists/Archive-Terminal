@@ -1,9 +1,9 @@
 /**
  * =============================================================================
- * RESOURCE MODAL — ARCHIVE TERMINAL v3.0
+ * RESOURCE MODAL — ARCHIVE TERMINAL v3.1
  * =============================================================================
- * Metal-framed Create/Edit form with screw heads, gradient accent bar,
- * and a cyan neural network schematic SVG inside the modal body.
+ * Metal-framed Create/Edit form using an AI-generated brushed metal frame
+ * image as background, with gradient accent bar and neural network SVG.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -60,12 +60,12 @@ const NeuralNetSVG = () => (
     <line x1="300" y1="25" x2="360" y2="40" stroke="#00f0ff" strokeWidth="0.5" opacity="0.4" />
     <line x1="300" y1="55" x2="360" y2="40" stroke="#00f0ff" strokeWidth="0.5" opacity="0.4" />
 
-    {/* Layer 1 nodes (input) */}
+    {/* Layer 1 nodes */}
     <circle cx="60" cy="20" r="4" fill="#060610" stroke="#00f0ff" strokeWidth="1" opacity="0.7" />
     <circle cx="60" cy="40" r="4" fill="#060610" stroke="#00f0ff" strokeWidth="1" opacity="0.7" />
     <circle cx="60" cy="60" r="4" fill="#060610" stroke="#00f0ff" strokeWidth="1" opacity="0.7" />
 
-    {/* Layer 2 nodes (hidden 1) */}
+    {/* Layer 2 nodes */}
     <circle cx="140" cy="15" r="4.5" fill="#060610" stroke="#00f0ff" strokeWidth="1" opacity="0.8">
       <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
     </circle>
@@ -76,7 +76,7 @@ const NeuralNetSVG = () => (
       <animate attributeName="opacity" values="0.8;1;0.8" dur="1.8s" repeatCount="indefinite" />
     </circle>
 
-    {/* Layer 3 nodes (hidden 2) */}
+    {/* Layer 3 nodes */}
     <circle cx="220" cy="20" r="4.5" fill="#060610" stroke="#00f0ff" strokeWidth="1" opacity="0.8">
       <animate attributeName="opacity" values="0.8;1;0.8" dur="2.2s" repeatCount="indefinite" />
     </circle>
@@ -138,22 +138,21 @@ const ResourceModal = ({ isOpen, onClose, onSubmit, resource }) => {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      {/* Metal-framed modal panel */}
+      {/* Metal-framed modal panel with AI-generated frame */}
       <div
         className="metal-frame w-full max-w-lg mx-4 animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
-        {/* Corner screws */}
-        <div className="screw screw-tl" />
-        <div className="screw screw-tr" />
-        <div className="screw screw-bl" />
-        <div className="screw screw-br" />
+        {/* AI-generated metal frame background */}
+        <div className="metal-frame-bg">
+          <img src="/assets/metal-frame.png" alt="" draggable="false" />
+        </div>
 
         {/* Gradient accent bar */}
         <div className="metal-accent-bar" />
 
         {/* Inner dark content area */}
-        <div className="metal-inner m-3 p-5">
+        <div className="metal-inner m-4 sm:m-5 p-5">
 
           {/* Header */}
           <div className="flex items-start justify-between mb-5">

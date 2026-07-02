@@ -1,16 +1,11 @@
 /**
  * =============================================================================
- * DASHBOARD — ARCHIVE TERMINAL v3.0
+ * DASHBOARD — ARCHIVE TERMINAL v3.1
  * =============================================================================
- * "Sci-Fi Server Room Terminal" — Main orchestrator.
- *
- * v3.0 features:
- * ● Server room background (rack lines, LEDs, floor grid, fog)
- * ● Carbon fiber console desk with fader sliders
- * ● 3 glowing 3D stat orbs (Total / Active / Archived)
- * ● Category filter chips with dot indicators
- * ● Toast notifications
- * ● Staggered card entrance animations
+ * Uses AI-generated photorealistic assets for:
+ * ● Server room background
+ * ● 3D glowing stat orbs (cyan/green/magenta)
+ * ● Carbon fiber console desk
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -129,50 +124,59 @@ const Dashboard = () => {
   /* ══════════════════════════════════════════════════════════════════════════ */
   return (
     <>
-      {/* ── SERVER ROOM BACKGROUND LAYERS ─────────────────────────────── */}
+      {/* ── SERVER ROOM BACKGROUND ────────────────────────────────────── */}
       <div className="server-room" aria-hidden="true" />
-      <div className="server-rack-lines" aria-hidden="true" />
-      <div className="rack-leds" aria-hidden="true" />
-      <div className="floor-grid" aria-hidden="true" />
-      <div className="fog-layer" aria-hidden="true" />
+      <div className="server-room-vignette" aria-hidden="true" />
       <div className="scanlines" aria-hidden="true" />
 
       {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
       <div className="relative z-10 pb-28 animate-fade-in">
 
-        {/* ── Page Header ─────────────────────────────────────────────── */}
-        <div className="mb-8">
-          <h2 className="font-mono text-2xl sm:text-3xl font-black tracking-wide mb-1">
-            <span className="neon-text-magenta">// DASHBOARD</span>
-          </h2>
-          <p className="font-mono text-sm text-text-muted cursor-blink">
-            {resources.length} resource{resources.length !== 1 ? 's' : ''} in the archive
-          </p>
+        {/* ── Page Header + Add Button ────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div>
+            <h2 className="font-mono text-2xl sm:text-3xl font-black tracking-wide mb-1">
+              <span className="neon-text-magenta">// DASHBOARD</span>
+            </h2>
+            <p className="font-mono text-sm text-text-muted cursor-blink">
+              {resources.length} resource{resources.length !== 1 ? 's' : ''} in the archive
+            </p>
+          </div>
+
+          <button onClick={openCreateModal} className="btn-neon btn-cyan">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            ADD RESOURCE
+          </button>
         </div>
 
-        {/* ── GLOWING ORB STATS ───────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 mb-10">
+        {/* ── GLOWING ORB STATS — AI-generated images ─────────────────── */}
+        <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-16 mb-10">
 
           {/* TOTAL orb — cyan */}
           <div className="orb-container">
-            <div className="orb orb-cyan">
-              <span className="orb-value">{stats.total}</span>
+            <div className="orb-wrapper" style={{ '--orb-glow': 'rgba(0,240,255,0.5)' }}>
+              <img src="/assets/orb-cyan.png" alt="" className="orb-image" draggable="false" />
+              <span className="orb-value orb-value-cyan">{stats.total}</span>
             </div>
             <span className="orb-label" style={{ color: '#00f0ff' }}>TOTAL</span>
           </div>
 
           {/* ACTIVE orb — green */}
           <div className="orb-container">
-            <div className="orb orb-green">
-              <span className="orb-value">{stats.active}</span>
+            <div className="orb-wrapper" style={{ '--orb-glow': 'rgba(0,255,136,0.5)' }}>
+              <img src="/assets/orb-green.png" alt="" className="orb-image" draggable="false" />
+              <span className="orb-value orb-value-green">{stats.active}</span>
             </div>
             <span className="orb-label" style={{ color: '#00ff88' }}>ACTIVE</span>
           </div>
 
           {/* ARCHIVED orb — magenta */}
           <div className="orb-container">
-            <div className="orb orb-magenta">
-              <span className="orb-value">{stats.archived}</span>
+            <div className="orb-wrapper" style={{ '--orb-glow': 'rgba(255,0,204,0.5)' }}>
+              <img src="/assets/orb-magenta.png" alt="" className="orb-image" draggable="false" />
+              <span className="orb-value orb-value-magenta">{stats.archived}</span>
             </div>
             <span className="orb-label" style={{ color: '#ff00cc' }}>ARCHIVED</span>
           </div>
@@ -332,14 +336,14 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* ── CARBON FIBER CONSOLE DESK ─────────────────────────────────── */}
+      {/* ── CARBON FIBER CONSOLE DESK — AI-generated image ──────────── */}
       <div className="console-desk" aria-hidden="true">
-        <div className="fader-track fader-track-l">
-          <div className="fader-knob" />
-        </div>
-        <div className="fader-track fader-track-r">
-          <div className="fader-knob" />
-        </div>
+        <img
+          src="/assets/console-desk.png"
+          alt=""
+          className="console-desk-img"
+          draggable="false"
+        />
       </div>
 
       {/* ── TOAST NOTIFICATIONS ───────────────────────────────────────── */}

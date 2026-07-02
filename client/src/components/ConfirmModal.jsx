@@ -1,8 +1,8 @@
 /**
  * =============================================================================
- * CONFIRM MODAL — ARCHIVE TERMINAL v3.0
+ * CONFIRM MODAL — ARCHIVE TERMINAL v3.1
  * =============================================================================
- * Metal-framed danger confirmation dialog with screw heads.
+ * Metal-framed danger confirmation dialog with AI-generated frame image.
  */
 
 import React from 'react';
@@ -21,16 +21,15 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, resourceTitle }) => {
         className="metal-frame w-full max-w-sm mx-4 animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
-        {/* Screws */}
-        <div className="screw screw-tl" />
-        <div className="screw screw-tr" />
-        <div className="screw screw-bl" />
-        <div className="screw screw-br" />
+        {/* AI-generated metal frame background */}
+        <div className="metal-frame-bg">
+          <img src="/assets/metal-frame.png" alt="" draggable="false" />
+        </div>
 
-        {/* Accent bar */}
+        {/* Red/magenta accent bar for danger */}
         <div className="metal-accent-bar" style={{ background: 'linear-gradient(90deg, #ff3366, #ff00cc, #ffaa00)' }} />
 
-        <div className="metal-inner m-3 p-6 text-center">
+        <div className="metal-inner m-4 p-6 text-center">
           {/* Warning icon */}
           <div className="flex justify-center mb-5">
             <div
